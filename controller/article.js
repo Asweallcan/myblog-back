@@ -71,6 +71,7 @@ exports.ifArticle = async ctx => {
 exports.saveArticle = async ctx => {
     try {
         // let dirname = transliteration.slugify(ctx.request.body.article.title);
+        console.log(ctx.request.body.article.imageArray);
         if (fs.existsSync(`${config.imagePath}/${ctx.request.body.article.title}`)) {
             if (!ctx.request.body.article.imageArray.length) {
                 await del([`${config.imagePath}/${ctx.request.body.article.title}`], {force: true});
