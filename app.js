@@ -8,6 +8,7 @@ const logger = require('koa-logger');
 const session = require("koa-session2");
 const Store = require("./store.js");
 const cors = require("kcors");
+const favicon = require("koa-favicon");
 
 //router
 const admin = require('./routes/admin.js');
@@ -28,6 +29,7 @@ app.use(require("koa-static")(__dirname + '/views'));
 app.use(session({store: new Store()}));
 app.use(cors());
 app.use(views(__dirname + '/views', {html:'underscore'}));
+app.use(favicon(__dirname+"/public/images/favicon.jpeg"));
 
 // logger
 app.use(async (ctx, next) => {
