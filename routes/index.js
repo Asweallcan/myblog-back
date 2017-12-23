@@ -1,11 +1,11 @@
 const router = require("koa-router")();
 const Article = require("../module/article.js");
 
-router.get("*",async ctx=>{
+router.get("*", async ctx => {
     await ctx.render("index");
 });
 
-router.post("/api/index/getarticles", async (ctx,next) => {
+router.post("/api/index/getarticles", async (ctx, next) => {
     try {
         let search = new RegExp(ctx.request.body.search || "", "gi");
         let searchTags = ctx.request.body.searchTags;
@@ -14,7 +14,7 @@ router.post("/api/index/getarticles", async (ctx,next) => {
         let count = 0;
         if (searchTags.length > 0) {
             articles = await Article.getArticle({
-                query: {$or: [{title: {$regex: search}}, {content: {$regex: search}}],tags: {$in: searchTags}},
+                query: {$or: [{title: {$regex: search}}, {content: {$regex: search}}], tags: {$in: searchTags}},
                 limit: 5,
                 skip: (currentPage - 1) * 5,
                 sort: {time: -1}
@@ -29,7 +29,7 @@ router.post("/api/index/getarticles", async (ctx,next) => {
             });
             count = await Article.getCount({$or: [{title: {$regex: search}}, {content: {$regex: search}}, {tags: {$in: [search]}}]});
         }
-        articles.forEach((el,index,input)=>{
+        articles.forEach((el, index, input) => {
             let regexp1 = /<p>[^<>\/]+<\/p>/;
             let regexp2 = /<img[^<>]+>/;
             let ret1 = el.content.match(regexp1) || "";
@@ -44,14 +44,14 @@ router.post("/api/index/getarticles", async (ctx,next) => {
     }
 });
 
-router.post("/api/index/getarticlebytitle",async ctx=>{
+router.post("/api/index/getarticlebytitle", async ctx => {
     let title = ctx.request.body.title;
-    let article = await Article.getArticle({query:{title:title}});
-    if(!article){
-        router.redirect("/error");
+    let article = await Article.getArticle({query: {title: title}});
+    if (!article.length < 1) {
+        ctx.redirect("/error");
     }
     ctx.response.type = 'application/json';
-    ctx.response.body = {article:article};
+    ctx.response.body = {article: article};
 });
 
 module.exports = router;
