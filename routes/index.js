@@ -48,7 +48,7 @@ router.post("/api/index/getarticlebytitle", async ctx => {
     let title = ctx.request.body.title;
     let article = await Article.getArticle({query: {title: title}});
     if (!article.length < 1) {
-        return ctx.render("index");
+        return await ctx.render("index");
     }
     ctx.response.type = 'application/json';
     ctx.response.body = {article: article};
