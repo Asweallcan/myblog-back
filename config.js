@@ -1,4 +1,4 @@
-const produciton = true;
+const produciton = false;
 
 module.exports = {
     imagePath : __dirname+"/public/images",
