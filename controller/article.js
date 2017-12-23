@@ -6,8 +6,6 @@ const gm = require("gm");
 const fs = require("fs");
 const async_fs = require("async-file");
 const del = require("del");
-const transliteration = require("transliteration");
-transliteration.slugify.config({lowercase: true, separator: "_"});
 
 var imageName;
 exports.uploader = busboy({
@@ -21,7 +19,6 @@ exports.uploader = busboy({
 exports.uploadImage = async (ctx,next) => {
     try {
         await next();
-        // let dirname = transliteration.slugify(ctx.request.body.title);
         ctx.response.type = "application/json";
         ctx.response.body = {imageUrl: `${config.urlPath}/images/${ctx.request.body.title}/${imageName}`};
     } catch (err) {
@@ -32,7 +29,6 @@ exports.uploadImage = async (ctx,next) => {
 exports.uploadImageNext = async ctx=>{
     return new Promise(async (resolve, reject) => {
         try{
-            // let dirname = transliteration.slugify(ctx.request.body.title);
             if (!fs.existsSync(`${config.imagePath}/${ctx.request.body.title}`)) {
                 await async_fs.mkdir(`${config.imagePath}/${ctx.request.body.title}`);
             }
@@ -70,7 +66,6 @@ exports.ifArticle = async ctx => {
 
 exports.saveArticle = async ctx => {
     try {
-        // let dirname = transliteration.slugify(ctx.request.body.article.title);
         console.log(ctx.request.body.article.imageArray);
         if (fs.existsSync(`${config.imagePath}/${ctx.request.body.article.title}`)) {
             if (!ctx.request.body.article.imageArray.length) {
@@ -96,7 +91,6 @@ exports.saveArticle = async ctx => {
 
 exports.deleteArticle = async ctx => {
     try {
-        // let title = transliteration.slugify(ctx.request.body.title);
         await del([`${config.imagePath}/${ctx.request.body.title}`], {force: true});
         await Article.removeArticle({title: ctx.request.body.title});
         ctx.response.body = 1;
@@ -127,7 +121,6 @@ exports.getArticles = async ctx => {
 
 exports.clearUnusedImage = async ctx => {
     try {
-        // let title = transliteration.slugify(ctx.request.body.title);
         let imageArray = await async_fs.readdir(`${config.imagePath}/${ctx.request.body.title}`);
         if (imageArray.toString() !== ctx.request.body.imageArray.toString()) {
             imageArray.forEach(async (el, index, input) => {

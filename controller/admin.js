@@ -5,7 +5,6 @@ const busboy = require("koa-busboy");
 const path = require("path");
 const gm = require("gm");
 const async_fs = require("async-file");
-const fs = require("fs");
 
 var avatarName;
 exports.uploader = busboy({
