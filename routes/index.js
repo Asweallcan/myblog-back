@@ -1,9 +1,9 @@
 const router = require("koa-router")();
 const Article = require("../module/article.js");
 
-router.get("*",async ctx=>{
-    await ctx.render("index");
-});
+// router.get("*",async ctx=>{
+//     await ctx.render("index");
+// });
 
 router.post("/api/index/getarticles", async (ctx,next) => {
     try {
@@ -47,6 +47,9 @@ router.post("/api/index/getarticles", async (ctx,next) => {
 router.post("/api/index/getarticlebytitle",async ctx=>{
     let title = ctx.request.body.title;
     let article = await Article.getArticle({query:{title:title}});
+    if(!article){
+        router.redirect("/error");
+    }
     ctx.response.type = 'application/json';
     ctx.response.body = {article:article};
 });
