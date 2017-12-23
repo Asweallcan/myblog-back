@@ -25,11 +25,11 @@ app.use(bodyparser({
 app.use(json());
 app.use(logger());
 app.use(require('koa-static')(__dirname + '/public'));
-app.use(require("koa-static")(__dirname + '/views'));
+// app.use(require("koa-static")(__dirname + '/views')); //production
 app.use(session({store: new Store()}));
 app.use(cors());
-app.use(views(__dirname + '/views', {html:'underscore'}));
-app.use(favicon(__dirname+"/public/images/favicon.jpeg"));
+app.use(views(__dirname + '/views', {html: 'underscore'}));
+app.use(favicon(__dirname + "/public/images/favicon.ico"));
 
 // logger
 app.use(async (ctx, next) => {

@@ -1,11 +1,11 @@
 const router = require("koa-router")();
 const Article = require("../module/article.js");
 
-router.get(async ctx=>{
+router.get("*",async ctx=>{
     await ctx.render("index")
 });
 
-router.post("/api/api/index/getarticles", async (ctx,next) => {
+router.post("/api/index/getarticles", async (ctx,next) => {
     try {
         let search = new RegExp(ctx.request.body.search || "", "gi");
         let searchTags = ctx.request.body.searchTags;
@@ -44,7 +44,7 @@ router.post("/api/api/index/getarticles", async (ctx,next) => {
     }
 });
 
-router.post("/api/api/article/getarticlebytitle",async ctx=>{
+router.post("/api/index/getarticlebytitle",async ctx=>{
     let title = ctx.request.body.title;
     let article = await Article.getArticle({query:{title:title}});
     ctx.response.type = 'application/json';

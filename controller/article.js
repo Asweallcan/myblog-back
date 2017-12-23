@@ -105,12 +105,12 @@ exports.deleteArticle = async ctx => {
     }
 };
 
-exports.getArticle = async ctx => {
+exports.getArticles = async ctx => {
     try {
-        let regex = new RegExp(ctx.query.regex || "", "gi");
+        let regex = new RegExp(ctx.request.body.regex || "", "gi");
         let tag = new Array(1);
-        tag.push(ctx.query.regex || "");
-        let page = ctx.query.page || 1;
+        tag.push(ctx.request.body.regex || "");
+        let page = ctx.request.body.page || 1;
         let articles = await Article.getArticle({
             query: {$or: [{title: {$regex: regex}}, {content: {$regex: regex}}, {tags: {$in: tag}}]},
             limit: 10,
