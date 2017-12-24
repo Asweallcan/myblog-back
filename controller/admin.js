@@ -1,5 +1,5 @@
 const Admin = require("../module/admin.js");
-const config = require(__dirname+"/../config.js");
+const config = require(__dirname + "/../config.js");
 const crypto = require("crypto"); //加密模块
 const busboy = require("koa-busboy");
 const path = require("path");
@@ -8,7 +8,7 @@ const async_fs = require("async-file");
 
 var avatarName;
 exports.uploader = busboy({
-    dest:  `${config.imagePath}/temp`,
+    dest: `${config.imagePath}/temp`,
     fnDestFilename: (fieldname, filename) => {
         avatarName = String(new Date().getTime() + Math.floor(Math.random() * 100)) + path.extname(filename);
         return avatarName;
@@ -21,7 +21,7 @@ exports.login = async ctx => {
             username: ctx.request.body.username,
             password: ctx.request.body.password
         });
-        if (!user) {   //如果查找用户不存在
+        if (!user) { //如果查找用户不存在
             ctx.response.body = -1;
             return
         }
@@ -36,14 +36,18 @@ exports.login = async ctx => {
 exports.initAvatar = async ctx => {
     let imgarr = await async_fs.readdir(`${config.imagePath}/avatar`);
     ctx.response.type = "application/json";
-    ctx.response.body = {avatarUrl: `${config.urlPath}/images/avatar/${imgarr[imgarr.length - 1]}`}
+    ctx.response.body = {
+        avatarUrl: `${config.urlPath}/images/avatar/${imgarr[imgarr.length - 1]}`
+    }
 };
 
-exports.uploadAvatar = async (ctx, next) => {
+exports.uploadAvatar = async(ctx, next) => {
     try {
         await next();
         ctx.response.type = "application/json";
-        ctx.response.body = {avatarUrl: `${config.urlPath}/images/temp/${avatarName}`};
+        ctx.response.body = {
+            avatarUrl: `${config.urlPath}/images/temp/${avatarName}`
+        };
     } catch (err) {
         console.log(err)
     }
@@ -59,11 +63,13 @@ exports.uploadAvatarNext = () => {
     })
 };
 
-exports.cropAvatar = async (ctx, next) => {
+exports.cropAvatar = async(ctx, next) => {
     try {
         next();
         ctx.response.type = "application/json";
-        ctx.response.body = {avatarUrl: `${config.urlPath}/images/avatar/${ctx.session.admin + path.extname(avatarName)}`}
+        ctx.response.body = {
+            avatarUrl: `${config.urlPath}/images/avatar/${ctx.session.admin + path.extname(avatarName)}`
+        }
     } catch (err) {
         console.log(err)
     }
@@ -78,10 +84,10 @@ exports.cropAvatarNext = (ctx, next) => {
         next();
     })
 };
-exports.cropAvatarFinal = async () => {
+exports.cropAvatarFinal = async() => {
     try {
         let arr = await async_fs.readdir(`${config.imagePath}/temp`);
-        arr.forEach(async (el) => {
+        arr.forEach(async(el) => {
             await async_fs.unlink(`${config.imagePath}/temp/${el}`)
         });
     } catch (err) {
@@ -91,5 +97,5 @@ exports.cropAvatarFinal = async () => {
 
 
 function _md5(password) { //md5加密密码
-    return crypto.createHash("md5").update(password).digest("base64")
+    return crypto.createHash("md5").update(password).digest("base64");
 }
