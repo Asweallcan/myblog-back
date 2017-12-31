@@ -19,7 +19,7 @@ exports.login = async ctx => {
     try {
         let user = await Admin.getAdmin({
             username: ctx.request.body.username,
-            password: _md5(ctx.request.body.password)
+            password: ctx.request.body.password
         });
         if (!user) { //如果查找用户不存在
             ctx.response.body = -1;
