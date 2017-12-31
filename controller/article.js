@@ -37,7 +37,7 @@ exports.uploadImageNext = async ctx => {
             let oldPath = ctx.request.files[0].path;
             let newPath = `${config.imagePath}/${ctx.request.body.title}/${imageName}`;
             await async_fs.rename(oldPath, newPath);
-            gm(newPath).resize(800, ">").write(newPath, function (err) {
+            gm(newPath).resize(900, ">").write(newPath, function (err) {
                 if (err) {
                     reject(err);
                 }
@@ -113,10 +113,10 @@ exports.deleteArticle = async ctx => {
 
 exports.getArticles = async ctx => {
     try {
-        let regex = new RegExp(ctx.request.body.regex || "", "gi");
+        let regex = new RegExp(ctx.request.body.search || "", "gi");
         let tag = new Array(1);
-        tag.push(ctx.request.body.regex || "");
-        let page = ctx.request.body.page || 1;
+        tag.push(ctx.request.body.search || "");
+        let page = ctx.request.body.currentPage || 1;
         let articles = await Article.getArticle({
             query: {
                 $or: [{

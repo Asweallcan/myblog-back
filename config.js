@@ -1,6 +1,6 @@
-const produciton = true;
+const produciton = false;
 
 module.exports = {
     imagePath : "./public/images",
-    urlPath : produciton ? "http://blog.lvshihaonb.cn":"http://127.0.0.1:8088"
+    urlPath : produciton ? "http://lvshihaonb.cn":"http://127.0.0.1:8088"
 };

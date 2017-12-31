@@ -14,6 +14,7 @@ const favicon = require("koa-favicon");
 const admin = require('./routes/admin.js');
 const article = require("./routes/article.js");
 const index = require("./routes/index.js");
+const blog = require("./routes/blog.js");
 
 // error handler
 onerror(app);
@@ -25,7 +26,7 @@ app.use(bodyparser({
 app.use(json());
 app.use(logger());
 app.use(require('koa-static')(__dirname + '/public'));
-app.use(require("koa-static")(__dirname + '/views'));
+// app.use(require("koa-static")(__dirname + '/views'));
 app.use(session({store: new Store()}));
 app.use(cors());
 app.use(views(__dirname + '/views', {html: 'underscore'}));
@@ -43,6 +44,7 @@ app.use(async (ctx, next) => {
 app.use(admin.routes(), admin.allowedMethods());
 app.use(article.routes(), admin.allowedMethods());
 app.use(index.routes(), index.allowedMethods());
+app.use(blog.routes(), blog.allowedMethods());
 
 // error-handling
 app.on('error', (err, ctx) => {

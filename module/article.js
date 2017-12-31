@@ -21,11 +21,12 @@ const articleSchema = new mongoose.Schema({
 
 articleSchema.statics.getArticle = function (article) {
     let query = article.query || {},
+        query2 = article.query2 || {},
         skip = article.skip || 0,
         limit = article.limit || 0,
         sort = article.sort || {};
     return new Promise((resolve, reject) => {
-        this.find(query, null, {skip: skip, limit: limit, sort: sort}, (err, result) => {
+        this.find(query, query2, {skip: skip, limit: limit, sort: sort}, (err, result) => {
             if (err) {
                 reject(err);
             }
