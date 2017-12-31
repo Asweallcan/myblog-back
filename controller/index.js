@@ -103,27 +103,11 @@ function getBizhi() {
                     title: $element.find(".con .tit").text(),
                     image: $element.find(".img a img").attr("src"),
                     link: $element.find(".img a").attr("href"),
-                    time : $element.find(".con .tme2 .time").text()
+                    time: $element.find(".con .tme2 .time").text()
                 })
             });
             resolve(items)
         })
-    })
-}
-
-async function getNbaInfo() {
-    return new Promise(async (resolve, reject) => {
-        try {
-            let nbaNews = await getNBAnews();
-            let nbaImage = await getNBAimg();
-            resolve({
-                nbaSlide: nbaImage.slide,
-                nbaRec: nbaImage.rec,
-                nbaNews: nbaNews
-            })
-        } catch (err) {
-            reject(err)
-        }
     })
 }
 
@@ -178,6 +162,22 @@ function getNBAnews() {
             });
             resolve(items);
         })
+    })
+}
+
+async function getNbaInfo() {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let nbaNews = await getNBAnews();
+            let nbaImage = await getNBAimg();
+            resolve({
+                nbaSlide: nbaImage.slide,
+                nbaRec: nbaImage.rec,
+                nbaNews: nbaNews
+            });
+        } catch (err) {
+            reject(err)
+        }
     })
 }
 
