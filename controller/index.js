@@ -12,8 +12,8 @@ exports.initIndex = async ctx => {
             bizhi = await getBizhi(),
             articles = await Article.getArticle({
                 query: {},
-                query2: {title: 1, time: 1, _id: 0},
-                sort: {time: -1},
+                query2: { title: 1, time: 1, _id: 0 },
+                sort: { time: -1 },
                 limit: 6
             });
         ctx.response.type = "application/json";
@@ -32,8 +32,8 @@ exports.initIndex = async ctx => {
 exports.getArticleByTitle = async ctx => {
     ctx.response.type = "application/json";
     ctx.response.body = {
-        article: await Article.getArticle({query: {title: ctx.request.body.title}})
-    }
+        article: await Article.getArticle({ query: { title: ctx.request.body.title } })
+    };
 };
 
 function getMoviesInfo() {
@@ -44,15 +44,17 @@ function getMoviesInfo() {
             }
             let $ = cheerio.load(content.text);
             let items = [];
-            $(".item-list li").slice(0, 10).each((index, element) => {
-                let $element = $(element);
-                items.push({
-                    title: $element.find(".item-desc a").text(),
-                    rate: $element.find(".item-desc span").text(),
-                    image: $element.find("#indeximg img").attr("src"),
-                    link: $element.find(".item-desc a").attr("href")
+            $(".item-list li")
+                .slice(0, 10)
+                .each((index, element) => {
+                    let $element = $(element);
+                    items.push({
+                        title: $element.find(".item-desc a").text(),
+                        rate: $element.find(".item-desc span").text(),
+                        image: $element.find("#indeximg img").attr("src"),
+                        link: $element.find(".item-desc a").attr("href")
+                    });
                 });
-            });
             resolve(items);
         });
     });
@@ -77,13 +79,15 @@ function getGamesInfo() {
                     link: $element.find("a").attr("href")
                 });
             });
-            $(".Ptxt.block .li3").slice(0, 10).each((index, element) => {
-                let $element = $(element);
-                data.gameNews.push({
-                    title: $element.find("a").text(),
-                    link: $element.find("a").attr("href")
+            $(".Ptxt.block .li3")
+                .slice(0, 10)
+                .each((index, element) => {
+                    let $element = $(element);
+                    data.gameNews.push({
+                        title: $element.find("a").text(),
+                        link: $element.find("a").attr("href")
+                    });
                 });
-            });
             resolve(data);
         });
     });
@@ -97,72 +101,77 @@ function getBizhi() {
             }
             let $ = cheerio.load(content.text);
             let items = [];
-            $(".Mid2_L li").slice(0, 3).each((index, element) => {
-                let $element = $(element);
-                items.push({
-                    title: $element.find(".con .tit").text(),
-                    image: $element.find(".img a img").attr("src"),
-                    link: $element.find(".img a").attr("href"),
-                    time: $element.find(".con .tme2 .time").text()
-                })
-            });
-            resolve(items)
-        })
-    })
+            $(".Mid2_L li")
+                .slice(0, 5)
+                .each((index, element) => {
+                    let $element = $(element);
+                    items.push({
+                        title: $element.find(".con .tit").text(),
+                        image: $element.find(".img a img").attr("src"),
+                        link: $element.find(".img a").attr("href"),
+                        time: $element.find(".con .tme2 .time").text()
+                    });
+                });
+            resolve(items);
+        });
+    });
 }
 
 function getNBAimg() {
     return new Promise((resolve, reject) => {
-        superagent.get("http://sports.qq.com/nba").charset("GBK").end((err, content) => {
-            if (err) {
-                reject(err);
-            }
-            let $ = cheerio.load(content.text);
-            let nba = {
-                slide: [],
-                rec: []
-            };
-            $(".slide-wrap .col-2 a").each((index, element) => {
-                let $element = $(element);
-                if (!exclude($element.find("p").text(), ["毛豆", "哈德森", "瓜子", "手游"])) {
-                    nba.slide.push({
-                        title: $element.find("p").text(),
+        superagent
+            .get("http://sports.qq.com/nba")
+            .charset("GBK")
+            .end((err, content) => {
+                if (err) {
+                    reject(err);
+                }
+                let $ = cheerio.load(content.text);
+                let nba = {
+                    slide: [],
+                    rec: []
+                };
+                $(".slide-wrap .col-2 a").each((index, element) => {
+                    let $element = $(element);
+                    if (!exclude($element.find("p").text(), ["毛豆", "哈德森", "瓜子", "手游"])) {
+                        nba.slide.push({
+                            title: $element.find("p").text(),
+                            image: $element.find("img").attr("src"),
+                            link: $element.attr("href")
+                        });
+                    }
+                });
+                $("#eFocusCont .lookb.cf .pic-item a").slice(0,4).each((index, element) => {
+                    let $element = $(element);
+                    nba.rec.push({
+                        title: $element.find("p span").text(),
                         image: $element.find("img").attr("src"),
                         link: $element.attr("href")
                     });
-                }
+                });
+                resolve(nba);
             });
-            $(".lookb .pic-item a").each((index, element) => {
-                let $element = $(element);
-                nba.rec.push({
-                    title: $element.find("p").text(),
-                    image: $element.find("img").attr("src"),
-                    link: $element.attr("href")
-                })
-            });
-            resolve(nba)
-        });
     });
 }
 
 function getNBAnews() {
     return new Promise((resolve, reject) => {
-        superagent.get("https://nba.hupu.com/").end((err, content) => {
+        superagent.get("https://voice.hupu.com/nba").end((err, content) => {
             if (err) {
                 reject(err);
             }
             let $ = cheerio.load(content.text);
             let items = [];
-            $(".bestNews .nba-latestNews ul li").each((index, element) => {
+            $(".news-list ul li .list-hd a").slice(0,17).each((index, element) => {
                 let $element = $(element);
                 items.push({
-                    title: $element.find("a").text(),
-                    link: $element.find("a").attr("href")
-                })
+                    title: $element.text(),
+                    link: $element.attr("href")
+                });
             });
             resolve(items);
-        })
-    })
+        });
+    });
 }
 
 async function getNbaInfo() {
@@ -176,9 +185,9 @@ async function getNbaInfo() {
                 nbaNews: nbaNews
             });
         } catch (err) {
-            reject(err)
+            reject(err);
         }
-    })
+    });
 }
 
 function exclude(text, arr) {

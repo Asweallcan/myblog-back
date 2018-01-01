@@ -16,7 +16,7 @@ exports.uploader = busboy({
     }
 });
 
-exports.uploadImage = async(ctx, next) => {
+exports.uploadImage = async (ctx, next) => {
     try {
         await next();
         ctx.response.type = "application/json";
@@ -24,12 +24,12 @@ exports.uploadImage = async(ctx, next) => {
             imageUrl: `${config.urlPath}/images/${ctx.request.body.title}/${imageName}`
         };
     } catch (err) {
-        console.log(err)
+        console.log(err);
     }
 };
 
 exports.uploadImageNext = async ctx => {
-    return new Promise(async(resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         try {
             if (!fs.existsSync(`${config.imagePath}/${ctx.request.body.title}`)) {
                 await async_fs.mkdir(`${config.imagePath}/${ctx.request.body.title}`);
@@ -37,19 +37,20 @@ exports.uploadImageNext = async ctx => {
             let oldPath = ctx.request.files[0].path;
             let newPath = `${config.imagePath}/${ctx.request.body.title}/${imageName}`;
             await async_fs.rename(oldPath, newPath);
-            gm(newPath).resize(900, ">").write(newPath, function (err) {
-                if (err) {
-                    reject(err);
-                }
-                resolve(1);
-            });
+            gm(newPath)
+                .resize(900, ">")
+                .write(newPath, function(err) {
+                    if (err) {
+                        reject(err);
+                    }
+                    resolve(1);
+                });
         } catch (err) {
             reject(err);
             console.log(err);
         }
-    })
+    });
 };
-
 
 exports.ifArticle = async ctx => {
     try {
@@ -63,9 +64,8 @@ exports.ifArticle = async ctx => {
         await Article.saveArticle(ctx.request.body.article);
         ctx.response.body = 1;
     } catch (err) {
-        console.log(err)
+        console.log(err);
     }
-
 };
 
 exports.saveArticle = async ctx => {
@@ -79,7 +79,7 @@ exports.saveArticle = async ctx => {
             } else {
                 let imageArray = await async_fs.readdir(`${config.imagePath}/${ctx.request.body.article.title}`);
                 if (imageArray.toString() !== ctx.request.body.article.imageArray.toString()) {
-                    imageArray.forEach(async(el, index, input) => {
+                    imageArray.forEach(async (el, index, input) => {
                         if (!ctx.request.body.article.imageArray.includes(el)) {
                             await async_fs.unlink(`${config.imagePath}/${ctx.request.body.article.title}/${el}`);
                         }
@@ -93,7 +93,7 @@ exports.saveArticle = async ctx => {
         await Article.saveArticle(ctx.request.body.article);
         ctx.response.body = 1;
     } catch (err) {
-        console.log(err)
+        console.log(err);
     }
 };
 
@@ -107,7 +107,7 @@ exports.deleteArticle = async ctx => {
         });
         ctx.response.body = 1;
     } catch (err) {
-        console.log(err)
+        console.log(err);
     }
 };
 
@@ -117,50 +117,15 @@ exports.getArticles = async ctx => {
         let tag = new Array(1);
         tag.push(ctx.request.body.search || "");
         let page = ctx.request.body.currentPage || 1;
-        let articles = await Article.getArticle({
-            query: {
-                $or: [{
-                    title: {
-                        $regex: regex
-                    }
-                }, {
-                    content: {
-                        $regex: regex
-                    }
-                }, {
-                    tags: {
-                        $in: tag
-                    }
-                }]
-            },
-            limit: 10,
-            skip: (page - 1) * 10,
-            sort: {
-                time: 1
-            }
-        });
-        let count = await Article.getCount({
-            $or: [{
-                title: {
-                    $regex: regex
-                }
-            }, {
-                content: {
-                    $regex: regex
-                }
-            }, {
-                tags: {
-                    $in: tag
-                }
-            }]
-        });
+        let articles = await Article.getArticle({ query: { $or: [{ title: { $regex: regex } }, { content: { $regex: regex } }, { tags: { $in: tag } }] }, limit: 10, skip: (page - 1) * 10, sort: { time: 1 } });
+        let count = await Article.getCount({$or: [{title: {$regex: regex}},{content: {$regex: regex}},{tags: {$in: tag}}]});
         ctx.response.type = "application/json";
         ctx.response.body = {
             articles: articles,
             count: count
         };
     } catch (err) {
-        console.log(err)
+        console.log(err);
     }
 };
 
@@ -168,7 +133,7 @@ exports.clearUnusedImage = async ctx => {
     try {
         let imageArray = await async_fs.readdir(`${config.imagePath}/${ctx.request.body.title}`);
         if (imageArray.toString() !== ctx.request.body.imageArray.toString()) {
-            imageArray.forEach(async(el, index, input) => {
+            imageArray.forEach(async (el, index, input) => {
                 if (!ctx.request.body.imageArray.includes(el)) {
                     await async_fs.unlink(`${config.imagePath}/${ctx.request.body.title}/${el}`);
                 }
@@ -176,6 +141,6 @@ exports.clearUnusedImage = async ctx => {
         }
         ctx.response.body = 1;
     } catch (err) {
-        console.log(err)
+        console.log(err);
     }
 };
