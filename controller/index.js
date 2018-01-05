@@ -117,7 +117,7 @@ function getBizhi() {
                     let $element = $(element);
                     items.push({
                         title: $element.find(".con .tit").text(),
-                        link: $element.find(".img a").attr("href"),
+                        link: "http://www.gamersky.com/"+$element.find(".img a").attr("href"),
                         time: $element.find(".con .tme2 .time").text()
                     });
                 });
