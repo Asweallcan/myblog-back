@@ -71,11 +71,10 @@ exports.initBlogNext = async ctx => {
                 let $ = cheerio.load(element.content);
                 let text = "";
                 $("p,h1,h3,h4,h5,h6,strong,span,em,pre,b").each((index, element) => {
-                    if (index > 2) {
-                        return false;
-                    }
-                    if ($(element).text()) {
+                    if (index < 1) {
                         text += `<p>${$(element).text()}</p>`;
+                    }else{
+                        return false;
                     }
                 });
                 zhaiyao.push({
