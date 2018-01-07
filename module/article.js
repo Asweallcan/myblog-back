@@ -26,7 +26,7 @@ articleSchema.statics.getArticle = function (article) {
         limit = article.limit || 0,
         sort = article.sort || {};
     return new Promise((resolve, reject) => {
-        this.find(query, query2, {skip: skip, limit: limit, sort: sort}, (err, result) => {
+        this.find(query, query2, {sort: sort,skip: skip, limit: limit}, (err, result) => {
             if (err) {
                 reject(err);
             }

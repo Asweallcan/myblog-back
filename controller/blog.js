@@ -41,11 +41,11 @@ exports.initBlogNext = async ctx => {
                         }
                     ]
                 },
-                limit: 10,
-                skip: (page - 1) * 10,
                 sort: {
-                    time: 1
-                }
+                    time: -1
+                },
+                limit: 10,
+                skip: (page - 1) * 10
             });
             let count = await Article.getCount({
                 $or: [
@@ -73,7 +73,7 @@ exports.initBlogNext = async ctx => {
                 $("p,h1,h3,h4,h5,h6,strong,span,em,pre,b").each((index, element) => {
                     if (index < 1) {
                         text += `<p>${$(element).text()}</p>`;
-                    }else{
+                    } else {
                         return false;
                     }
                 });
