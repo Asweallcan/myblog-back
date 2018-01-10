@@ -34,7 +34,7 @@ app.use(session({ store: new Store() }));
 app.use(cors());
 app.use(views(__dirname + "/views", { html: "underscore" }));
 app.use(favicon(__dirname + "/public/images/favicon.ico"));
-app.use(timeout(10000, { status: "503", message: "请求超时,请刷新页面" }));
+app.use(timeout(20000, { status: "503", message: "请求超时,请刷新页面" }));
 
 // logger
 app.use(async (ctx, next) => {
