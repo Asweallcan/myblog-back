@@ -1,27 +1,26 @@
 const cheerio = require("cheerio");
 const superagent = require("superagent");
 const Article = require("../module/article.js");
-
 require("superagent-charset")(superagent);
 
-exports.initIndex = async ctx => {
+
+exports.getArticleByTitle = async ctx => {
+    ctx.response.type = "application/json";
+    ctx.response.body = {
+        article: await Article.getArticle({query: {title: ctx.request.body.title}})
+    };
+};
+
+exports.getArticle = async ctx => {
     try {
-        let movies = await getMoviesInfo(),
-            games = await getGamesInfo(),
-            nba = await getNbaInfo(),
-            bizhi = await getBizhi(),
-            articles = await Article.getArticle({
-                query: {},
-                query2: { title: 1, time: 1, _id: 0 },
-                sort: { time: -1 },
-                limit: 6
-            });
+        let articles = await Article.getArticle({
+            query: {},
+            query2: {title: 1, time: 1, _id: 0},
+            sort: {time: -1},
+            limit: 6
+        });
         ctx.response.type = "application/json";
         ctx.response.body = {
-            movies: movies,
-            games: games,
-            bizhi: bizhi,
-            nba: nba,
             articles: articles
         };
     } catch (err) {
@@ -29,14 +28,19 @@ exports.initIndex = async ctx => {
     }
 };
 
-exports.getArticleByTitle = async ctx => {
-    ctx.response.type = "application/json";
-    ctx.response.body = {
-        article: await Article.getArticle({ query: { title: ctx.request.body.title } })
-    };
+exports.getMoviesInfo = async (ctx, next) => {
+    try {
+        let movie = await next();
+        ctx.response.type = "application/json";
+        ctx.response.body = {
+            movie: movie
+        }
+    } catch (err) {
+        console.log(err)
+    }
 };
 
-function getMoviesInfo() {
+exports.getMoviesInfoNext = () => {
     return new Promise((resolve, reject) => {
         superagent.get("http://gaoqing.fm").end((err, content) => {
             if (err) {
@@ -58,20 +62,24 @@ function getMoviesInfo() {
             resolve(items);
         });
     });
-}
+};
 
-function getGamesInfo() {
+exports.getGamesInfo = async (ctx, next) => {
+    try {
+        let game = await next();
+        ctx.response.type = "application/json";
+        ctx.response.body = {
+            game: game
+        }
+    } catch (err) {
+        console.log(err)
+    }
+};
+
+exports.getGamesInfoNext = () => {
     return new Promise((resolve, reject) => {
         superagent
             .get("http://www.gamersky.com")
-            // .set("Cookie",{
-            //     "Cookieheibai" : "bai",
-            //     "Hm_lvt_dcb5060fba0123ff56d253331f28db6a" : ["1514867662","1514868621","1514965993","1514979300"],
-            //     "UM_distinctid" : "160549230e23a8-0cf0d0ee863393-5b452a1d-144000-160549230e3753"
-            // })
-            // .set("User-Agent","Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36")
-            // .set("Host","gamersky.com")
-            // .set("Referer","http://http://image.gamersky.com/")
             .end((err, content) => {
                 if (err) {
                     reject(err);
@@ -101,9 +109,21 @@ function getGamesInfo() {
                 resolve(dataResolve);
             });
     });
-}
+};
 
-function getBizhi() {
+exports.getBizhi = async (ctx, next) => {
+    try {
+        let bizhi = await next();
+        ctx.response.type = "application/json";
+        ctx.response.body = {
+            bizhi: bizhi
+        }
+    } catch (err) {
+        console.log(err)
+    }
+};
+
+exports.getBizhiNext = () => {
     return new Promise((resolve, reject) => {
         superagent.get("http://www.gamersky.com/ent/wp").end((err, content) => {
             if (err) {
@@ -117,16 +137,28 @@ function getBizhi() {
                     let $element = $(element);
                     items.push({
                         title: $element.find(".con .tit").text(),
-                        link: "http://www.gamersky.com/"+$element.find(".img a").attr("href"),
+                        link: "http://www.gamersky.com/" + $element.find(".img a").attr("href"),
                         time: $element.find(".con .tme2 .time").text()
                     });
                 });
             resolve(items);
         });
     });
-}
+};
 
-function getNBAimg() {
+exports.getNBAimg = async (ctx, next) => {
+    try {
+        let nbaImg = await next();
+        ctx.response.type = "application/json";
+        ctx.response.body = {
+            nbaimg: nbaImg
+        }
+    } catch (err) {
+        console.log(err)
+    }
+};
+
+exports.getNBAimgNext = () => {
     return new Promise((resolve, reject) => {
         superagent
             .get("http://sports.qq.com/nba")
@@ -163,9 +195,21 @@ function getNBAimg() {
                 resolve(nba);
             });
     });
-}
+};
 
-function getNBAnews() {
+exports.getNBAnews = async (ctx, next) => {
+    try {
+        let nbaNews = await next();
+        ctx.response.type = "application/json";
+        ctx.response.body = {
+            nbanews: nbaNews
+        }
+    } catch (err) {
+        console.log(err)
+    }
+};
+
+exports.getNBAnewsNext = () => {
     return new Promise((resolve, reject) => {
         superagent.get("https://voice.hupu.com/nba").end((err, content) => {
             if (err) {
@@ -185,23 +229,7 @@ function getNBAnews() {
             resolve(items);
         });
     });
-}
-
-async function getNbaInfo() {
-    return new Promise(async (resolve, reject) => {
-        try {
-            let nbaNews = await getNBAnews();
-            let nbaImage = await getNBAimg();
-            resolve({
-                nbaSlide: nbaImage.slide,
-                nbaRec: nbaImage.rec,
-                nbaNews: nbaNews
-            });
-        } catch (err) {
-            reject(err);
-        }
-    });
-}
+};
 
 function exclude(text, arr) {
     for (let exc of arr) {
