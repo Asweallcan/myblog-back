@@ -211,13 +211,13 @@ exports.getNBAnews = async (ctx, next) => {
 
 exports.getNBAnewsNext = () => {
     return new Promise((resolve, reject) => {
-        superagent.get("https://voice.hupu.com/nba").end((err, content) => {
+        superagent.get("http://sports.sina.com.cn/nba/").end((err, content) => {
             if (err) {
                 reject(err);
             }
             let $ = cheerio.load(content.text);
             let items = [];
-            $(".news-list ul li .list-hd a")
+            $(".-live-page-widget ul li p a")
                 .slice(0, 17)
                 .each((index, element) => {
                     let $element = $(element);
