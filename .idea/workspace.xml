@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="bfdf7192-c4fd-4d45-86a6-612aae355f6d" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/controller/index.js" afterPath="$PROJECT_DIR$/controller/index.js" />
-    </list>
+    <list default="true" id="bfdf7192-c4fd-4d45-86a6-612aae355f6d" name="Default" comment="" />
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
     <ignored path="$PROJECT_DIR$/tmp/" />
@@ -39,8 +37,8 @@
       <file leaf-file-name="index.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/controller/index.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="660">
-              <caret line="231" column="2" lean-forward="true" selection-start-line="231" selection-start-column="2" selection-end-line="231" selection-end-column="2" />
+            <state relative-caret-position="198">
+              <caret line="210" column="0" lean-forward="true" selection-start-line="210" selection-start-column="0" selection-end-line="210" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -141,8 +139,8 @@
     <dismissed value="$PROJECT_DIR$/package.json" />
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="618" />
-    <option name="y" value="32" />
+    <option name="x" value="352" />
+    <option name="y" value="63" />
     <option name="width" value="1324" />
     <option name="height" value="1038" />
   </component>
@@ -287,15 +285,15 @@
       <workItem from="1514717203113" duration="1060000" />
       <workItem from="1515292941247" duration="1806000" />
       <workItem from="1515583188508" duration="627000" />
-      <workItem from="1515808326165" duration="4402000" />
+      <workItem from="1515808326165" duration="4859000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="180400000" />
+    <option name="totallyTimeSpent" value="180857000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="618" y="32" width="1324" height="1038" extended-state="0" />
+    <frame x="352" y="63" width="1324" height="1038" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1799687" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -495,8 +493,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/controller/index.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="660">
-          <caret line="231" column="2" lean-forward="true" selection-start-line="231" selection-start-column="2" selection-end-line="231" selection-end-column="2" />
+        <state relative-caret-position="198">
+          <caret line="210" column="0" lean-forward="true" selection-start-line="210" selection-start-column="0" selection-end-line="210" selection-end-column="0" />
           <folding />
         </state>
       </provider>

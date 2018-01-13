@@ -131,14 +131,14 @@ exports.getBizhiNext = () => {
             }
             let $ = cheerio.load(content.text);
             let items = [];
-            $(".Mid2_L li")
-                .slice(0, 5)
+            $(".Mid2_L ul li .con")
+                .slice(0, 6)
                 .each((index, element) => {
                     let $element = $(element);
                     items.push({
-                        title: $element.find(".con .tit").text(),
-                        link:  $element.find(".img a").attr("href"),
-                        time: $element.find(".con .tme2 .time").text()
+                        title: $element.find(".tit a").text(),
+                        link:  $element.find(".tit a").attr("href"),
+                        time: $element.find(".tme2 .time").text()
                     });
                 });
             resolve(items);
