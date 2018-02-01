@@ -2,20 +2,28 @@ const mongoose = require("../mongoose_helper.js").mongoose;
 
 const articleSchema = new mongoose.Schema({
     title: {
-        type:String,
-        default:""
+        type: String,
+        default: ""
     },
     tags: {
-        type:Array,
-        default:[]
+        type: Array,
+        default: []
     },
     time: {
         type: String,
-        default: new Date().getTime(),
+        default: new Date().getTime()
     },
     content: {
-        type:String,
-        default:""
+        type: String,
+        default: ""
+    },
+    author: {
+        type: String,
+        default: ""
+    },
+    nickname: {
+        type: String,
+        default: ""
     }
 });
 
@@ -26,7 +34,11 @@ articleSchema.statics.getArticle = function (article) {
         limit = article.limit || 0,
         sort = article.sort || {};
     return new Promise((resolve, reject) => {
-        this.find(query, query2, {sort: sort,skip: skip, limit: limit}, (err, result) => {
+        this.find(query, query2, {
+            sort: sort,
+            skip: skip,
+            limit: limit
+        }, (err, result) => {
             if (err) {
                 reject(err);
             }
@@ -46,7 +58,7 @@ articleSchema.statics.getCount = function (article) {
     })
 };
 
-articleSchema.statics.saveArticle = function (article) {
+articleSchema.statics.insertArticle = function (article) {
     return new Promise((resolve, reject) => {
         this.create(article, (err, result) => {
             if (err) {
@@ -57,7 +69,7 @@ articleSchema.statics.saveArticle = function (article) {
     })
 };
 
-articleSchema.statics.removeArticle = function (article) {
+articleSchema.statics.deleteArticle = function (article) {
     return new Promise((resolve, reject) => {
         this.remove(article, (err, result) => {
             if (err) {

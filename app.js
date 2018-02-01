@@ -1,43 +1,54 @@
+/*
+ * @Author: lvshihao
+ * @Date: 2018-01-30 08:45:20
+ * @Last Modified by: lvshihao
+ * @Last Modified time: 2018-01-30 14:58:33
+ */
 const Koa = require("koa");
 const app = new Koa();
-const views = require("koa-views");
 const json = require("koa-json");
 const onerror = require("koa-onerror");
 const bodyparser = require("koa-bodyparser");
 const logger = require("koa-logger");
-const session = require("koa-session2");
-const Store = require("./store.js");
 const cors = require("kcors");
-const favicon = require("koa-favicon");
-const timeout = require("koa-timeout-v2");
-
-//router
 const admin = require("./routes/admin.js");
 const article = require("./routes/article.js");
-const index = require("./routes/index.js");
-const blog = require("./routes/blog.js");
+const session = require("koa-session");
+
+app.keys = ["lvshihao"];
+
+const CONFIG = {
+    key: 'koa:sess',
+    /** (string) cookie key (default is koa:sess) */
+    /** (number || 'session') maxAge in ms (default is 1 days) */
+    /** 'session' will result in a cookie that expires when session/browser is closed */
+    /** Warning: If a session cookie is stolen, this cookie will never expire */
+    maxAge: 86400000,
+    overwrite: true,
+    /** (boolean) can overwrite or not (default true) */
+    httpOnly: true,
+    /** (boolean) httpOnly or not (default true) */
+    signed: true,
+    /** (boolean) signed or not (default true) */
+    rolling: false,
+    /** (boolean) Force a session identifier cookie to be set on every response. The expiration is reset to the original maxAge, resetting the expiration countdown. (default is false) */
+    renew: false,
+    /** (boolean) renew session when session is nearly expired, so we can always keep user logged in. (default is false)*/
+};
 
 // error handler
 onerror(app);
 
 // middlewares
-app.use(
-    bodyparser({
-        enableTypes: ["json", "form", "text"]
-    })
-);
+app.use(bodyparser({
+    enableTypes: ["json", "form", "text"]
+}));
 app.use(json());
 app.use(logger());
 app.use(require("koa-static")(__dirname + "/public"));
-app.use(require("koa-static")(__dirname + "/views"));
-app.use(session({ store: new Store() }));
 app.use(cors());
-app.use(views(__dirname + "/views", { html: "underscore" }));
-app.use(favicon(__dirname + "/public/images/favicon.ico"));
-app.use(timeout(20000, { status: "503", message: "请求超时,请刷新页面" }));
-
-// logger
-app.use(async (ctx, next) => {
+app.use(session(CONFIG, app));
+app.use(async(ctx, next) => {
     const start = new Date();
     await next();
     const ms = new Date() - start;
@@ -47,12 +58,9 @@ app.use(async (ctx, next) => {
 // routes
 app.use(admin.routes(), admin.allowedMethods());
 app.use(article.routes(), admin.allowedMethods());
-app.use(index.routes(), index.allowedMethods());
-app.use(blog.routes(), blog.allowedMethods());
 
 // error-handling
 app.on("error", (err, ctx) => {
     console.error("server error", err, ctx);
 });
 app.listen(8088);
-module.exports = app;
