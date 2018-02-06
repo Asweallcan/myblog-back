@@ -2,67 +2,58 @@
  * @Author: lvshihao
  * @Date: 2018-01-30 08:45:22
  * @Last Modified by: lvshihao
- * @Last Modified time: 2018-01-30 13:43:37
+ * @Last Modified time: 2018-02-02 16:43:30
  */
 const mongoose = require("../mongoose_helper.js").mongoose;
 
-const adminSchema = new mongoose.Schema({
-    username: {
-        type: String,
-        default: ""
-    },
-    nickname: {
-        type: String,
-        default: ""
-    },
-    password: {
-        type: String,
-        default: ""
-    }
-});
+const adminSchema = new mongoose.Schema({username: String, nickname: String, password: String});
 
-adminSchema.statics.getAdmin = function (user) {
+adminSchema.statics.Create = function (params) {
+    const {doc} = params;
     return new Promise((resolve, reject) => {
-        this.findOne(user, (err, result) => {
+        this.create(doc, (err, result) => {
             if (err) {
-                reject(err)
+                reject(err);
             }
-            resolve(result)
+            resolve(result);
         })
     })
 };
 
-adminSchema.statics.insertAdmin = function (user) {
+adminSchema.statics.Find = function (params) {
+    const {conditions, projections, options} = params;
     return new Promise((resolve, reject) => {
-        this.create(user, (err, result) => {
-            if (err) {
-                resolve(err);
-            }
-            resolve(1);
-        })
-    })
-}
-
-adminSchema.statics.deleteAdmin = function (user) {
-    return new Promise((resolve, reject) => {
-        this.remove(user, (err, result) => {
+        this.find(conditions, projections, options, (err, result) => {
             if (err) {
                 reject(err);
             }
-            resolve(1);
+            resolve(result);
         })
     })
-}
+};
 
-adminSchema.statics.updateAdmin = function(user){
-    return new Promise((resolve,reject)=>{
-        this.update({username:user.username},user,(err,result)=>{
-            if(err){
+adminSchema.statics.Update = function (params) {
+    const {conditions, doc, options} = params;
+    return new Promise((resolve, reject) => {
+        this.update(conditions, doc, options, (err, result) => {
+            if (err) {
                 reject(err);
             }
-            resolve(1);
+            resolve(result);
         })
     })
-}
+};
+
+adminSchema.statics.Count = function (params) {
+    const {conditions} = params;
+    return new Promise((resolve, reject) => {
+        this.count(conditions, (err, result) => {
+            if (err) {
+                reject(err);
+            }
+            resolve(result);
+        })
+    })
+};
 
 module.exports = mongoose.model("admin", adminSchema);

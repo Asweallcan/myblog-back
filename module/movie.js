@@ -1,28 +1,7 @@
-const mongoose = require("../mongoose_helper.js").mongoose;
-const articleSchema = new mongoose.Schema({
-    title: String,
-    tags: Array,
-    time: {
-        type: String,
-        default: new Date().getTime()
-    },
-    content: String,
-    author: String,
-    nickname: String,
-    comments: [
-        {
-            username: String,
-            nickname: String,
-            content: String,
-            time: {
-                type: String,
-                default: new Date().getTime()
-            }
-        }
-    ]
-});
+const mongoose = require("../mongoose_helper").mongoose;
+const movieSchema = new mongoose.Schema({title: String, description: String, stars: Array, director: String, rate: Number});
 
-articleSchema.statics.Create = function (params) {
+movieSchema.statics.Create = function (params) {
     const {doc} = params;
     return new Promise((resolve, reject) => {
         this.create(doc, (err, result) => {
@@ -34,7 +13,7 @@ articleSchema.statics.Create = function (params) {
     })
 };
 
-articleSchema.statics.Find = function (params) {
+movieSchema.statics.Find = function (params) {
     const {conditions, projections, options} = params;
     return new Promise((resolve, reject) => {
         this.find(conditions, projections, options, (err, result) => {
@@ -46,7 +25,7 @@ articleSchema.statics.Find = function (params) {
     })
 };
 
-articleSchema.statics.Update = function (params) {
+movieSchema.statics.Update = function (params) {
     const {conditions, doc, options} = params;
     return new Promise((resolve, reject) => {
         this.update(conditions, doc, options, (err, result) => {
@@ -58,7 +37,7 @@ articleSchema.statics.Update = function (params) {
     })
 };
 
-articleSchema.statics.Remove = function (params) {
+movieSchema.statics.Remove = function (params) {
     const {conditions} = params;
     return new Promise((resolve, reject) => {
         this.remove(conditions, (err, result) => {
@@ -70,7 +49,7 @@ articleSchema.statics.Remove = function (params) {
     })
 };
 
-articleSchema.statics.Count = function (params) {
+movieSchema.statics.Count = function (params) {
     const {conditions} = params;
     return new Promise((resolve, reject) => {
         this.count(conditions, (err, result) => {
@@ -82,4 +61,4 @@ articleSchema.statics.Count = function (params) {
     })
 };
 
-module.exports = mongoose.model("article", articleSchema);
+module.exports = mongoose.model("movie", movieSchema);

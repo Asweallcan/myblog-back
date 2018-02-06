@@ -2,7 +2,7 @@
  * @Author: lvshihao
  * @Date: 2018-01-30 08:45:20
  * @Last Modified by: lvshihao
- * @Last Modified time: 2018-01-30 14:58:33
+ * @Last Modified time: 2018-02-02 18:07:22
  */
 const Koa = require("koa");
 const app = new Koa();
@@ -13,6 +13,7 @@ const logger = require("koa-logger");
 const cors = require("kcors");
 const admin = require("./routes/admin.js");
 const article = require("./routes/article.js");
+const movie = require("./routes/movie");
 const session = require("koa-session");
 
 app.keys = ["lvshihao"];
@@ -58,6 +59,7 @@ app.use(async(ctx, next) => {
 // routes
 app.use(admin.routes(), admin.allowedMethods());
 app.use(article.routes(), admin.allowedMethods());
+app.use(movie.routes(), movie.allowedMethods());
 
 // error-handling
 app.on("error", (err, ctx) => {

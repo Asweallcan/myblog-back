@@ -5,12 +5,11 @@ const path = require("path");
 const gm = require("gm");
 const fs = require("fs");
 const async_fs = require("async-file");
-const cheerio = require("cheerio");
 const del = require("del");
 
-var imageName;
+let imageName;
 exports.uploader = busboy({
-    dest: `${config.imagePath}/temp`,
+    dest: `${config.articleImagePath}/temp`,
     fnDestFilename: (fieldname, filename) => {
         imageName = String(new Date().getTime() + Math.floor(Math.random() * 100)) + path.extname(filename);
         return imageName;
@@ -18,65 +17,20 @@ exports.uploader = busboy({
 });
 
 exports.uploadImage = async(ctx, next) => {
-    try {
-        await next();
-        ctx.response.type = "application/json";
-        ctx.response.body = {
-            imageUrl: `${config.urlPath}/images/${ctx.request.body.title}/${imageName}`
-        };
-    } catch (err) {
-        throw new Error(err);
-    }
-};
-
-exports.uploadImageNext = async ctx => {
-    return new Promise(async(resolve, reject) => {
-        try {
-            if (!fs.existsSync(`${config.imagePath}/${ctx.request.body.title}`)) {
-                await async_fs.mkdir(`${config.imagePath}/${ctx.request.body.title}`);
-            }
-            let oldPath = ctx.request.files[0].path;
-            let newPath = `${config.imagePath}/${ctx.request.body.title}/${imageName}`;
-            await async_fs.rename(oldPath, newPath);
-            gm(newPath)
-                .resize(900, ">")
-                .write(newPath, function (err) {
-                    if (err) {
-                        reject(err);
-                    }
-                    resolve(1);
-                });
-        } catch (err) {
-            reject(err);
-        }
-    });
-};
-
-exports.ifArticle = async ctx => { //看是否已经存在文章
-    try {
-        let number = await Article.getCount({title: ctx.request.body.article.title});
-        if (number) {
-            ctx.response.body = -1;
-            return;
-        }
-        await Article.insertArticle(ctx.request.body.article);
-        ctx.response.body = 1;
-    } catch (err) {
-        throw new Error(err);
-    }
+    ctx.response.body = `${config.urlPath}/articles/temp/${imageName}`;
 };
 
 exports.saveArticle = async ctx => {
     try {
-        if (fs.existsSync(`${config.imagePath}/${ctx.request.body.article.title}`)) {
+        if (fs.existsSync(`${config.articleImagePath}/${ctx.request.body.article.title}`)) {
             if (!ctx.request.body.article.imageArray.length) {
-                await del([`${config.imagePath}/${ctx.request.body.article.title}`], {force: true});
+                await del([`${config.articleImagePath}/${ctx.request.body.article.title}`], {force: true});
             } else {
-                let imageArray = await async_fs.readdir(`${config.imagePath}/${ctx.request.body.article.title}`);
+                let imageArray = await async_fs.readdir(`${config.articleImagePath}/${ctx.request.body.article.title}`);
                 if (imageArray.toString() !== ctx.request.body.article.imageArray.toString()) {
                     imageArray.forEach(async(el, index, input) => {
                         if (!ctx.request.body.article.imageArray.includes(el)) {
-                            await async_fs.unlink(`${config.imagePath}/${ctx.request.body.article.title}/${el}`);
+                            await async_fs.unlink(`${config.articleImagePath}/${ctx.request.body.article.title}/${el}`);
                         }
                     });
                 }
@@ -92,7 +46,7 @@ exports.saveArticle = async ctx => {
 
 exports.deleteArticle = async ctx => {
     try {
-        await del([`${config.imagePath}/${ctx.request.body.title}`], {force: true});
+        await del([`${config.articleImagePath}/${ctx.request.body.title}`], {force: true});
         await Article.deleteArticle({title: ctx.request.body.title});
         ctx.response.body = 1;
     } catch (err) {
@@ -299,11 +253,11 @@ exports.getArticleNext = async ctx => {
 
 exports.clearUnusedImage = async ctx => {
     try {
-        let imageArray = await async_fs.readdir(`${config.imagePath}/${ctx.request.body.title}`);
+        let imageArray = await async_fs.readdir(`${config.articleImagePath}/${ctx.request.body.title}`);
         if (imageArray.toString() !== ctx.request.body.imageArray.toString()) {
             imageArray.forEach(async(el, index, input) => {
                 if (!ctx.request.body.imageArray.includes(el)) {
-                    await async_fs.unlink(`${config.imagePath}/${ctx.request.body.title}/${el}`);
+                    await async_fs.unlink(`${config.articleImagePath}/${ctx.request.body.title}/${el}`);
                 }
             });
         }
