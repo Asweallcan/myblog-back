@@ -1,3 +1,11 @@
+/*
+ * @Author: lvshihao
+ * @Date: 2018-02-06 09:31:02
+ * @Last Modified by: lvshihao
+ * @Last Modified time: 2018-02-07 09:13:43
+ */
+// import {Promise} from "mongoose";
+
 const Article = require("../module/article.js");
 const config = require(__dirname + "/../config.js");
 const busboy = require("koa-busboy");
@@ -17,100 +25,144 @@ exports.uploader = busboy({
 });
 
 exports.uploadImage = async(ctx, next) => {
-    ctx.response.body = `${config.urlPath}/articles/temp/${imageName}`;
-};
-
-exports.saveArticle = async ctx => {
     try {
-        if (fs.existsSync(`${config.articleImagePath}/${ctx.request.body.article.title}`)) {
-            if (!ctx.request.body.article.imageArray.length) {
-                await del([`${config.articleImagePath}/${ctx.request.body.article.title}`], {force: true});
-            } else {
-                let imageArray = await async_fs.readdir(`${config.articleImagePath}/${ctx.request.body.article.title}`);
-                if (imageArray.toString() !== ctx.request.body.article.imageArray.toString()) {
-                    imageArray.forEach(async(el, index, input) => {
-                        if (!ctx.request.body.article.imageArray.includes(el)) {
-                            await async_fs.unlink(`${config.articleImagePath}/${ctx.request.body.article.title}/${el}`);
-                        }
-                    });
+        await next();
+        ctx.response.body = `${config.urlPath}/articles/${ctx.request.body.title}/${imageName}`;
+    } catch (err) {
+        throw new Error(err);
+    };
+}
+
+exports.uploadImageNext = async ctx => {
+    return new Promise(async(resolve, reject) => {
+        try {
+            const oldpath = `${config.articleImagePath}/temp/${imageName}`;
+            const newpath = `${config.articleImagePath}/${ctx.request.body.title}/${imageName}`;
+            if (!await async_fs.exists(`${config.articleImagePath}/${ctx.request.body.title}`)) {
+                await async_fs.mkdir(`${config.articleImagePath}/${ctx.request.body.title}`);
+            }
+            await async_fs.rename(oldpath, newpath);
+            gm(newpath)
+                .resize(800, null, ">")
+                .quality(70)
+                .write(newpath, err => {
+                    if (err) {
+                        reject(err);
+                    }
+                    resolve(1);
+                });
+        } catch (err) {
+            reject(err);
+        }
+    })
+}
+
+exports.save = async ctx => {
+    try {
+        if (!ctx.request.body.image.length) {
+            if (await async_fs.exists(`${config.articleImagePath}/${ctx.request.body.title}`)) 
+                await del([`${config.articleImagePath}/${ctx.request.body.title}`], {force: true});
+            }
+        else {
+            const image = await async_fs.readdir(`${config.articleImagePath}/${ctx.request.body.title}`);
+            if (image.toString() !== ctx.request.body.image.toString()) {
+                for (let i = 0, temp; temp = image[i++];) {
+                    if (!(ctx.request.body.image.includes(temp))) {
+                        await del([`${config.articleImagePath}/${ctx.request.body.title}/${temp}`])
+                    }
                 }
             }
         }
-        await Article.deleteArticle({title: ctx.request.body.article.title});
-        await Article.insertArticle(ctx.request.body.article);
+        if (ctx.request.body.id) {
+            await Article.Update({
+                conditions: {
+                    _id: ctx.request.body.id
+                },
+                doc: {
+                    title: ctx.request.body.title,
+                    tags: ctx
+                        .request
+                        .body
+                        .tags
+                        .split("/"),
+                    content: ctx.request.body.content,
+                    author: ctx.request.body.author,
+                    description: ctx.request.body.description
+                },
+                options: {}
+            })
+        } else {
+            await Article.Create({
+                doc: {
+                    title: ctx.request.body.title,
+                    tags: ctx
+                        .request
+                        .body
+                        .tags
+                        .split("/"),
+                    content: ctx.request.body.content,
+                    author: ctx.request.body.author,
+                    description: ctx.request.body.description
+                }
+            })
+        }
         ctx.response.body = 1;
     } catch (err) {
+        ctx.response.body = -1;
         throw new Error(err);
     }
 };
 
-exports.deleteArticle = async ctx => {
+exports.delete = async ctx => {
     try {
-        await del([`${config.articleImagePath}/${ctx.request.body.title}`], {force: true});
-        await Article.deleteArticle({title: ctx.request.body.title});
+        if (await async_fs.exists(`${config.articleImagePath}/${ctx.request.body.title}`)) {
+            await del([`${config.articleImagePath}/${ctx.request.body.title}`], {force: true});
+        }
+        await Article.Remove({
+            conditions: {
+                _id: ctx.request.body.id
+            }
+        });
         ctx.response.body = 1;
     } catch (err) {
+        ctx.response.body = -1;
         throw new Error(err);
     }
 };
 
-exports.getArticle = async(ctx, next) => {
+exports.getArticles = async(ctx, next) => {
     switch (ctx.request.body.type) {
         case "admin":
             try {
-                let regex = new RegExp(ctx.request.body.search || "", "gi");
-                let tag = new Array(1);
-                tag.push(ctx.request.body.search || "");
-                let page = ctx.request.body.currentPage || 1;
-                let articles = await Article.getArticle({
-                    query: {
-                        $or: [
-                            {
-                                title: {
-                                    $regex: regex
-                                }
-                            }, {
-                                content: {
-                                    $regex: regex
-                                }
-                            }, {
-                                tags: {
-                                    $in: tag
-                                }
-                            }
-                        ]
+                const page = ctx.request.body.page - 1;
+                const skip = page * 10;
+                const articles = await Article.Find({
+                    conditions: {
+                        author: ctx.request.body.author
                     },
-                    query2: {
-                        title: 1,
-                        _id: 0
+                    projections: {
+                        __v: 0,
+                        time: 0,
+                        comments: 0,
+                        author: 0
                     },
-                    limit: 10,
-                    skip: (page - 1) * 10,
-                    sort: {
-                        time: 1
+                    options: {
+                        limit: 10,
+                        skip,
+                        sort: {
+                            time: -1
+                        }
                     }
                 });
-                let count = await Article.getCount({
-                    $or: [
-                        {
-                            title: {
-                                $regex: regex
-                            }
-                        }, {
-                            content: {
-                                $regex: regex
-                            }
-                        }, {
-                            tags: {
-                                $in: tag
-                            }
-                        }
-                    ]
+                const count = await Article.Count({
+                    conditions: {
+                        author: ctx.request.body.author
+                    }
                 });
                 ctx.response.type = "application/json";
                 ctx.response.body = {
-                    articles: articles,
-                    count: count
+                    articles,
+                    totalPages: Math.max(Math.ceil(count / 10), 1)
                 };
                 break;
             } catch (err) {
@@ -119,23 +171,19 @@ exports.getArticle = async(ctx, next) => {
             }
         case "index":
             try {
-                let articles = await Article.getArticle({
-                    query: {},
-                    query2: {
-                        title: 1,
-                        time: 1,
-                        _id: 0
-                    },
-                    sort: {
-                        time: -1
-                    },
-                    limit: 6
+                let articles = await Article.Find({
+                    conditions: {},
+                    projections: {
+                        __v: 0,
+                        comments: 0,
+                        author: 0,
+                        description: 0,
+                        tags: 0,
+                        content: 0
+                    }
                 });
-                ctx.response.type = "application/json";
                 console.log(articles);
-                ctx.response.body = {
-                    articles
-                };
+                ctx.response.body = articles
                 break;
             } catch (err) {
                 throw new Error(err);
@@ -174,95 +222,4 @@ exports.getArticle = async(ctx, next) => {
     }
 };
 
-exports.getArticleNext = async ctx => {
-    return new Promise(async(resolve, reject) => {
-        try {
-            let regex = new RegExp(ctx.request.body.search || "", "gi");
-            let tag = new Array(1);
-            tag.push(ctx.request.body.search || "");
-            let page = ctx.request.body.currentPage || 1;
-            let articles = await Article.getArticle({
-                query: {
-                    $or: [
-                        {
-                            title: {
-                                $regex: regex
-                            }
-                        }, {
-                            content: {
-                                $regex: regex
-                            }
-                        }, {
-                            tags: {
-                                $in: tag
-                            }
-                        }
-                    ]
-                },
-                sort: {
-                    time: -1
-                },
-                limit: 5,
-                skip: (page - 1) * 5
-            });
-            let count = await Article.getCount({
-                $or: [
-                    {
-                        title: {
-                            $regex: regex
-                        }
-                    }, {
-                        content: {
-                            $regex: regex
-                        }
-                    }, {
-                        tags: {
-                            $in: tag
-                        }
-                    }
-                ]
-            });
-            let zhaiyao = [];
-            articles.forEach((element, index) => {
-                let $ = cheerio.load(element.content);
-                let text = "";
-                $("p,h1,h3,h4,h5,h6,strong,span,em,pre,b,div").each((index, element) => {
-                    if (index < 1) {
-                        text += `<p>${$(element).text()}</p>`;
-                    } else {
-                        return false;
-                    }
-                });
-                zhaiyao.push({
-                    title: articles[index].title,
-                    time: articles[index].time,
-                    image: $("img").length > 0
-                        ? $("img")[0].attribs.src
-                        : "",
-                    tags: articles[index].tags,
-                    text: text || `<p>${articles[index].content}</p>`
-                });
-                console.log(zhaiyao);
-            });
-            resolve({articles: zhaiyao, count: count});
-        } catch (err) {
-            reject(err);
-        }
-    });
-}
 
-exports.clearUnusedImage = async ctx => {
-    try {
-        let imageArray = await async_fs.readdir(`${config.articleImagePath}/${ctx.request.body.title}`);
-        if (imageArray.toString() !== ctx.request.body.imageArray.toString()) {
-            imageArray.forEach(async(el, index, input) => {
-                if (!ctx.request.body.imageArray.includes(el)) {
-                    await async_fs.unlink(`${config.articleImagePath}/${ctx.request.body.title}/${el}`);
-                }
-            });
-        }
-        ctx.response.body = 1;
-    } catch (err) {
-        throw new Error(err);
-    }
-};

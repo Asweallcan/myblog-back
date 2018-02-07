@@ -8,11 +8,10 @@ const articleSchema = new mongoose.Schema({
     },
     content: String,
     author: String,
-    nickname: String,
+    description: String,
     comments: [
         {
             username: String,
-            nickname: String,
             content: String,
             time: {
                 type: String,
