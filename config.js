@@ -7,5 +7,5 @@ module.exports = {
     movieImagePath: "./public/movies",
     urlPath: produciton
         ? "http://localhost:8088"
-        : "http://localhost:8088"
+        : "http://server.lvshihaonb.cn"
 };
