@@ -2,7 +2,7 @@
  * @Author: lvshihao
  * @Date: 2018-02-04 10:16:48
  * @Last Modified by: lvshihao
- * @Last Modified time: 2018-02-04 15:56:48
+ * @Last Modified time: 2018-02-08 09:13:27
  */
 // import { Promise } from "mongoose";
 
@@ -30,7 +30,7 @@ exports.getMovies = async(ctx, next) => {
             result.push({
                 ...element._doc,
                 imageName: imageName[0]
-            })
+            });
         }
         ctx.response.type = "application/json";
         ctx.response.body = result;

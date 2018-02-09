@@ -2,18 +2,19 @@
  * @Author: lvshihao
  * @Date: 2018-02-06 09:31:02
  * @Last Modified by: lvshihao
- * @Last Modified time: 2018-02-07 09:13:43
+ * @Last Modified time: 2018-02-07 17:07:58
  */
 // import {Promise} from "mongoose";
 
 const Article = require("../module/article.js");
+const Admin = require("../module/admin.js")
 const config = require(__dirname + "/../config.js");
 const busboy = require("koa-busboy");
 const path = require("path");
 const gm = require("gm");
-const fs = require("fs");
 const async_fs = require("async-file");
 const del = require("del");
+const cheerio = require("cheerio");
 
 let imageName;
 exports.uploader = busboy({
@@ -43,7 +44,7 @@ exports.uploadImageNext = async ctx => {
             }
             await async_fs.rename(oldpath, newpath);
             gm(newpath)
-                .resize(800, null, ">")
+                .resize(1024, null, ">")
                 .quality(70)
                 .write(newpath, err => {
                     if (err) {
@@ -171,7 +172,7 @@ exports.getArticles = async(ctx, next) => {
             }
         case "index":
             try {
-                let articles = await Article.Find({
+                const articles = await Article.Find({
                     conditions: {},
                     projections: {
                         __v: 0,
@@ -180,9 +181,13 @@ exports.getArticles = async(ctx, next) => {
                         description: 0,
                         tags: 0,
                         content: 0
+                    },
+                    options: {
+                        sort: {
+                            time: -1
+                        }
                     }
                 });
-                console.log(articles);
                 ctx.response.body = articles
                 break;
             } catch (err) {
@@ -191,12 +196,93 @@ exports.getArticles = async(ctx, next) => {
             }
         case "blog":
             try {
-                let data = await next();
+                const page = ctx.request.body.page - 1;
+                const skip = page * 5;
+                const limit = 5;
+                const search = new RegExp(ctx.request.body.search, "gi");
+                const tags = [];
+                tags.push(ctx.request.body.search);
+                const articles = await Article.Find({
+                    conditions: {
+                        $or: [
+                            {
+                                title: {
+                                    $regex: search
+                                }
+                            }, {
+                                content: {
+                                    $regex: search
+                                }
+                            }, {
+                                tags: {
+                                    $in: tags
+                                }
+                            }
+                        ]
+                    },
+                    projections: {
+                        comments: 0,
+                        __v: 0,
+                        content: 0
+                    },
+                    options: {
+                        sort: {
+                            time: -1
+                        },
+                        skip,
+                        limit
+                    }
+                })
+
+                for (let i = 0, article; article = articles[i++];) {
+                    let username = article.author;
+                    let user = await Admin.Find({
+                        conditions: {
+                            username: username
+                        },
+                        projections: {
+                            __v: 0,
+                            password: 0,
+                            username: 0,
+                            _id: 0
+                        },
+                        options: {}
+                    });
+                    articles[i - 1] = {
+                        ...articles[i - 1]._doc,
+                        nickname: user[0].nickname
+                    };
+                }
+
+                ctx.state.articles = articles;
+
+                next();
+
+                const count = await Article.Count({
+                    conditions: {
+                        $or: [
+                            {
+                                title: {
+                                    $regex: search
+                                }
+                            }, {
+                                content: {
+                                    $regex: search
+                                }
+                            }, {
+                                tags: {
+                                    $in: tags
+                                }
+                            }
+                        ]
+                    }
+                });
+                const totalPages = Math.max(Math.ceil(count / 5), 1);
                 ctx.response.type = "application/json";
                 ctx.response.body = {
-                    articles: data.articles,
-                    count: data.count
-                };
+                    articles: ctx.state.articles,
+                    totalPages
+                }
                 break;
             } catch (err) {
                 throw new Error(err);
@@ -204,15 +290,14 @@ exports.getArticles = async(ctx, next) => {
             }
         case "article":
             try {
-                ctx.response.type = "application/json";
-                ctx.response.body = {
-                    article: await Article.getArticle({
-                        query: {
-                            title: ctx.request.body.title
-                        }
-                    })
-                };
-                break;
+                const article = await Article.Find({
+                    conditions: {
+                        _id: ctx.request.body.id
+                    },
+                    projections: {},
+                    options: {}
+                });
+                ctx.response.body = article[0];
             } catch (err) {
                 throw new Error(err);
                 break;
@@ -222,4 +307,18 @@ exports.getArticles = async(ctx, next) => {
     }
 };
 
-
+exports.getArticlesNext = async ctx => {
+    ctx
+        .state
+        .articles
+        .forEach(async(element, index) => {
+            let image;
+            if (await async_fs.exists(`${config.articleImagePath}/${element._id}`)) {
+                image = await async_fs.readdir(`${config.articleImagePath}/${element._id}`)[0];
+            }
+            ctx.state.articles[index] = {
+                ...element,
+                image: image || ""
+            }
+        })
+}
