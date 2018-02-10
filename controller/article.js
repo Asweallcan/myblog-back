@@ -2,7 +2,7 @@
  * @Author: lvshihao
  * @Date: 2018-02-06 09:31:02
  * @Last Modified by: lvshihao
- * @Last Modified time: 2018-02-07 17:07:58
+ * @Last Modified time: 2018-02-10 09:27:16
  */
 // import {Promise} from "mongoose";
 
@@ -233,7 +233,6 @@ exports.getArticles = async(ctx, next) => {
                         limit
                     }
                 })
-
                 for (let i = 0, article; article = articles[i++];) {
                     let username = article.author;
                     let user = await Admin.Find({
@@ -248,16 +247,16 @@ exports.getArticles = async(ctx, next) => {
                         },
                         options: {}
                     });
+                    if (await async_fs.exists(`${config.articleImagePath}/${article[i - 1]._doc._id}`)) {
+                        let imageArr = await async_fs.readdir(`${config.articleImagePath}/${element._id}`);
+                    }
                     articles[i - 1] = {
                         ...articles[i - 1]._doc,
-                        nickname: user[0].nickname
+                        nickname: user[0].nickname,
+                        image: imageArr[0]
                     };
                 }
-
                 ctx.state.articles = articles;
-
-                next();
-
                 const count = await Article.Count({
                     conditions: {
                         $or: [
@@ -306,19 +305,3 @@ exports.getArticles = async(ctx, next) => {
             break;
     }
 };
-
-exports.getArticlesNext = async ctx => {
-    ctx
-        .state
-        .articles
-        .forEach(async(element, index) => {
-            let image;
-            if (await async_fs.exists(`${config.articleImagePath}/${element._id}`)) {
-                image = await async_fs.readdir(`${config.articleImagePath}/${element._id}`)[0];
-            }
-            ctx.state.articles[index] = {
-                ...element,
-                image: image || ""
-            }
-        })
-}
