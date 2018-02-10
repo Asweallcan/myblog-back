@@ -2,7 +2,7 @@
  * @Author: lvshihao
  * @Date: 2018-02-06 09:31:02
  * @Last Modified by: lvshihao
- * @Last Modified time: 2018-02-10 11:19:52
+ * @Last Modified time: 2018-02-10 11:25:20
  */
 // import {Promise} from "mongoose";
 
@@ -250,7 +250,7 @@ exports.getArticles = async(ctx, next) => {
                     });
                     let image;
                     if (await async_fs.exists(`${config.articleImagePath}/${article.title}`)) {
-                        console.log(await async_fs.readdir(`${config.articleImagePath}/${article.title}`)[0]);
+                        console.log(await async_fs.readdir(`${config.articleImagePath}/${article.title}`));
                         image = await async_fs.readdir(`${config.articleImagePath}/${article.title}`)[0];
                     }
                     articles[i - 1] = {
