@@ -2,7 +2,7 @@
  * @Author: lvshihao
  * @Date: 2018-02-06 09:31:02
  * @Last Modified by: lvshihao
- * @Last Modified time: 2018-02-10 10:00:58
+ * @Last Modified time: 2018-02-10 10:12:23
  */
 // import {Promise} from "mongoose";
 
@@ -250,6 +250,7 @@ exports.getArticles = async(ctx, next) => {
                     let image;
                     if (await async_fs.exists(`${config.articleImagePath}/${article._id}`)) {
                         image = await async_fs.readdir(`${config.articleImagePath}/${article._id}`)[0];
+                        console.log(image);
                     }
                     articles[i - 1] = {
                         ...articles[i - 1]._doc,
@@ -259,7 +260,6 @@ exports.getArticles = async(ctx, next) => {
                             : ""
                     };
                 }
-
                 const count = await Article.Count({
                     conditions: {
                         $or: [
