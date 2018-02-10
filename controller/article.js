@@ -2,7 +2,7 @@
  * @Author: lvshihao
  * @Date: 2018-02-06 09:31:02
  * @Last Modified by: lvshihao
- * @Last Modified time: 2018-02-10 09:50:33
+ * @Last Modified time: 2018-02-10 10:00:58
  */
 // import {Promise} from "mongoose";
 
@@ -247,16 +247,19 @@ exports.getArticles = async(ctx, next) => {
                         },
                         options: {}
                     });
-                    let imageArr = await async_fs.readdir(`${config.articleImagePath}/${article._id}`);
+                    let image;
+                    if (await async_fs.exists(`${config.articleImagePath}/${article._id}`)) {
+                        image = await async_fs.readdir(`${config.articleImagePath}/${article._id}`)[0];
+                    }
                     articles[i - 1] = {
                         ...articles[i - 1]._doc,
                         nickname: user[0].nickname,
-                        image: imageArr.length
-                            ? imageArr[0]
+                        image: image
+                            ? image
                             : ""
                     };
                 }
-                ctx.state.articles = articles;
+
                 const count = await Article.Count({
                     conditions: {
                         $or: [
@@ -279,7 +282,7 @@ exports.getArticles = async(ctx, next) => {
                 const totalPages = Math.max(Math.ceil(count / 5), 1);
                 ctx.response.type = "application/json";
                 ctx.response.body = {
-                    articles: ctx.state.articles,
+                    articles: articles,
                     totalPages
                 }
                 break;
