@@ -2,7 +2,7 @@
  * @Author: lvshihao
  * @Date: 2018-02-04 10:16:48
  * @Last Modified by: lvshihao
- * @Last Modified time: 2018-02-08 09:13:27
+ * @Last Modified time: 2018-02-12 09:37:56
  */
 // import { Promise } from "mongoose";
 
@@ -26,10 +26,15 @@ exports.getMovies = async(ctx, next) => {
         });
         const result = [];
         for (let i = 0, element; element = movies[i++];) {
-            let imageName = await async_fs.readdir(`${config.movieImagePath}/${element._id}`);
+            let imageName = [];
+            if (await async_fs.exists(`${config.movieImagePath}/${element._id}`)) {
+                imageName = await async_fs.readdir(`${config.movieImagePath}/${element._id}`);
+            }
             result.push({
                 ...element._doc,
-                imageName: imageName[0]
+                imageName: imageName.length
+                    ? imageName[0]
+                    : ""
             });
         }
         ctx.response.type = "application/json";
