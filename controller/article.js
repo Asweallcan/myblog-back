@@ -2,7 +2,7 @@
  * @Author: lvshihao
  * @Date: 2018-02-06 09:31:02
  * @Last Modified by: lvshihao
- * @Last Modified time: 2018-02-10 11:28:42
+ * @Last Modified time: 2018-05-20 08:00:34
  */
 // import {Promise} from "mongoose";
 
@@ -25,7 +25,7 @@ exports.uploader = busboy({
     }
 });
 
-exports.uploadImage = async(ctx, next) => {
+exports.uploadImage = async (ctx, next) => {
     try {
         await next();
         ctx.response.body = `${config.urlPath}/articles/${ctx.request.body.title}/${imageName}`;
@@ -35,7 +35,7 @@ exports.uploadImage = async(ctx, next) => {
 }
 
 exports.uploadImageNext = async ctx => {
-    return new Promise(async(resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         try {
             const oldpath = `${config.articleImagePath}/temp/${imageName}`;
             const newpath = `${config.articleImagePath}/${ctx.request.body.title}/${imageName}`;
@@ -61,10 +61,11 @@ exports.uploadImageNext = async ctx => {
 exports.save = async ctx => {
     try {
         if (!ctx.request.body.image.length) {
-            if (await async_fs.exists(`${config.articleImagePath}/${ctx.request.body.title}`)) 
-                await del([`${config.articleImagePath}/${ctx.request.body.title}`], {force: true});
-            }
-        else {
+            if (await async_fs.exists(`${config.articleImagePath}/${ctx.request.body.title}`))
+                await del([`${config.articleImagePath}/${ctx.request.body.title}`], {
+                    force: true
+                });
+        } else {
             const image = await async_fs.readdir(`${config.articleImagePath}/${ctx.request.body.title}`);
             if (image.toString() !== ctx.request.body.image.toString()) {
                 for (let i = 0, temp; temp = image[i++];) {
@@ -74,37 +75,29 @@ exports.save = async ctx => {
                 }
             }
         }
+        const doc = {
+            title: ctx.request.body.title,
+            tags: ctx
+                .request
+                .body
+                .tags
+                .split("/"),
+            content: ctx.request.body.content,
+            author: ctx.request.body.author,
+            description: ctx.request.body.description,
+            time: (new Date).getTime()
+        };
         if (ctx.request.body.id) {
             await Article.Update({
                 conditions: {
                     _id: ctx.request.body.id
                 },
-                doc: {
-                    title: ctx.request.body.title,
-                    tags: ctx
-                        .request
-                        .body
-                        .tags
-                        .split("/"),
-                    content: ctx.request.body.content,
-                    author: ctx.request.body.author,
-                    description: ctx.request.body.description
-                },
+                doc,
                 options: {}
             })
         } else {
             await Article.Create({
-                doc: {
-                    title: ctx.request.body.title,
-                    tags: ctx
-                        .request
-                        .body
-                        .tags
-                        .split("/"),
-                    content: ctx.request.body.content,
-                    author: ctx.request.body.author,
-                    description: ctx.request.body.description
-                }
+                doc
             })
         }
         ctx.response.body = 1;
@@ -117,7 +110,9 @@ exports.save = async ctx => {
 exports.delete = async ctx => {
     try {
         if (await async_fs.exists(`${config.articleImagePath}/${ctx.request.body.title}`)) {
-            await del([`${config.articleImagePath}/${ctx.request.body.title}`], {force: true});
+            await del([`${config.articleImagePath}/${ctx.request.body.title}`], {
+                force: true
+            });
         }
         await Article.Remove({
             conditions: {
@@ -131,7 +126,7 @@ exports.delete = async ctx => {
     }
 };
 
-exports.getArticles = async(ctx, next) => {
+exports.getArticles = async (ctx, next) => {
     switch (ctx.request.body.type) {
         case "admin":
             try {
@@ -205,21 +200,19 @@ exports.getArticles = async(ctx, next) => {
                 tags.push(ctx.request.body.search);
                 const articles = await Article.Find({
                     conditions: {
-                        $or: [
-                            {
-                                title: {
-                                    $regex: search
-                                }
-                            }, {
-                                content: {
-                                    $regex: search
-                                }
-                            }, {
-                                tags: {
-                                    $in: tags
-                                }
+                        $or: [{
+                            title: {
+                                $regex: search
                             }
-                        ]
+                        }, {
+                            content: {
+                                $regex: search
+                            }
+                        }, {
+                            tags: {
+                                $in: tags
+                            }
+                        }]
                     },
                     projections: {
                         comments: 0,
@@ -255,28 +248,25 @@ exports.getArticles = async(ctx, next) => {
                     articles[i - 1] = {
                         ...articles[i - 1]._doc,
                         nickname: user[0].nickname,
-                        image: imageArr.length
-                            ? imageArr[0]
-                            : ""
+                        image: imageArr.length ?
+                            imageArr[0] : ""
                     };
                 }
                 const count = await Article.Count({
                     conditions: {
-                        $or: [
-                            {
-                                title: {
-                                    $regex: search
-                                }
-                            }, {
-                                content: {
-                                    $regex: search
-                                }
-                            }, {
-                                tags: {
-                                    $in: tags
-                                }
+                        $or: [{
+                            title: {
+                                $regex: search
                             }
-                        ]
+                        }, {
+                            content: {
+                                $regex: search
+                            }
+                        }, {
+                            tags: {
+                                $in: tags
+                            }
+                        }]
                     }
                 });
                 const totalPages = Math.max(Math.ceil(count / 5), 1);
